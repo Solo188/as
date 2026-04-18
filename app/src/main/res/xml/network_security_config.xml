@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    SentinelNode Network Security Config
+
+    РЕАЛЬНОЕ ОГРАНИЧЕНИЕ ANDROID 11+ (API 30+):
+    ─────────────────────────────────────────────────────────────────────────
+    Пользовательские CA (установленные через Settings → Security → Install cert)
+    НЕ доверяются сторонним приложениям начиная с Android 7 (API 24).
+
+    Для работы HTTPS MITM без root необходимо ОДНО из:
+    1. Root + установить CA в /system/etc/security/cacerts/ (требует root)
+    2. Device Owner (MDM) + DevicePolicyManager.installCaCert()
+    3. Целевое приложение имеет свой network_security_config с user certs
+       (только debug-сборки или специально настроенные приложения)
+
+    Данный конфиг позволяет САМОМУ ПРИЛОЖЕНИЮ доверять user-CA в debug режиме.
+    Это нужно для тестирования MitmProxy через само приложение.
+    ─────────────────────────────────────────────────────────────────────────
+-->
+<network-security-config>
+
+    <!--
+        В debug-сборках приложение (com.flow.validator) доверяет user CA.
+        Это позволяет тестировать MitmProxy через само приложение.
+    -->
+    <debug-overrides>
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </debug-overrides>
+
+    <!--
+        Release: только системные CA.
+        Cleartext HTTP запрещён (usesCleartextTraffic=false в manifest).
+    -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+
+</network-security-config>

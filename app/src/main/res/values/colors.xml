@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Adaptive icon background — matches the dark theme -->
+    <color name="ic_launcher_background">#161B22</color>
+
+    <!-- Brand palette -->
+    <color name="color_primary">#58A6FF</color>
+    <color name="color_surface">#161B22</color>
+    <color name="color_background">#0D1117</color>
+    <color name="color_on_surface">#E6EDF3</color>
+    <color name="color_muted">#8B949E</color>
+    <color name="color_success">#3FB950</color>
+    <color name="color_warning">#D29922</color>
+    <color name="color_error">#FF7B72</color>
+</resources>

@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.flow.validator">
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         PERMISSIONS
+         ══════════════════════════════════════════════════════════════════════ -->
+
+    <!-- VPN tunnel -->
+    <uses-permission android:name="android.permission.BIND_VPN_SERVICE" />
+
+    <!-- Foreground service (all API levels) -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+    <!-- API 34: FOREGROUND_SERVICE_SPECIAL_USE for VPN + MITM proxy -->
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"
+        android:minSdkVersion="34" />
+
+    <!-- API 29–33: connectedDevice covers VPN/proxy foreground type -->
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE"
+        android:minSdkVersion="29"
+        android:maxSdkVersion="33" />
+
+    <!-- Network access -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+
+    <!-- Wake lock: keep CPU awake during active filtering -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <!-- Boot auto-start -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <!-- Device Admin (MDM policies, optional) -->
+    <uses-permission android:name="android.permission.BIND_DEVICE_ADMIN" />
+    <uses-permission android:name="android.permission.MANAGE_DEVICE_ADMINS" />
+
+    <!-- Certificate install (KeyChain) -->
+    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
+
+    <!-- Logcat access (only available with adb grant or system UID) -->
+    <uses-permission android:name="android.permission.READ_LOGS" />
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         APPLICATION
+         ══════════════════════════════════════════════════════════════════════ -->
+
+    <application
+        android:allowBackup="false"
+        android:label="SentinelNode"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.SentinelNode"
+        android:usesCleartextTraffic="false"
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:largeHeap="true">
+
+        <!-- ── Dashboard ────────────────────────────────────────────────── -->
+        <activity
+            android:name=".ui.DashboardActivity"
+            android:exported="true"
+            android:label="Sentinel"
+            android:screenOrientation="portrait"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- ── Certificate Install ──────────────────────────────────────── -->
+        <activity
+            android:name=".ui.CertInstallActivity"
+            android:exported="false"
+            android:label="Install CA Certificate"
+            android:parentActivityName=".ui.DashboardActivity" />
+
+        <!-- ── Device Admin Receiver ────────────────────────────────────── -->
+        <receiver
+            android:name=".admin.AdminReceiver"
+            android:label="Sentinel Policy"
+            android:description="@string/admin_description"
+            android:permission="android.permission.BIND_DEVICE_ADMIN"
+            android:exported="true">
+            <meta-data
+                android:name="android.app.device_admin"
+                android:resource="@xml/device_admin_rules" />
+            <intent-filter>
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- ── Boot Receiver ────────────────────────────────────────────── -->
+        <receiver
+            android:name=".service.BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- ── VPN Service ──────────────────────────────────────────────── -->
+        <!--
+            foregroundServiceType selection:
+              API 34+  → specialUse  (covers any purpose, declared with reason below)
+              API 29–33 → connectedDevice (VPN/proxy matches this category)
+              API 26–28 → no type required
+
+            Note: specialUse on API 34+ requires Google Play store review
+            if published publicly. For sideload/enterprise this is fine.
+        -->
+        <service
+            android:name=".vpn.ValidatorVpnService"
+            android:permission="android.permission.BIND_VPN_SERVICE"
+            android:exported="false"
+            android:foregroundServiceType="connectedDevice|specialUse">
+            <intent-filter>
+                <action android:name="android.net.VpnService" />
+            </intent-filter>
+            <!-- Required metadata for specialUse on API 34+ -->
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="VPN ad-blocking proxy — intercepts DNS/HTTP/TLS traffic
+                                system-wide to block advertising and tracking domains" />
+        </service>
+
+        <!-- ── Main Service ─────────────────────────────────────────────── -->
+        <service
+            android:name=".service.MainService"
+            android:exported="false"
+            android:foregroundServiceType="connectedDevice|specialUse"
+            android:stopWithTask="false" />
+
+    </application>
+</manifest>

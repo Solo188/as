@@ -1,0 +1,35 @@
+# Gradle
+.gradle/
+build/
+**/build/
+*.class
+.gradletasknamecache
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+*.iws
+*.ipr
+local.properties
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Keystores — NEVER commit real keystores
+*.jks
+*.keystore
+!debug.keystore
+
+# Generated
+gen/
+out/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Navigation editor generated files
+.navigation/

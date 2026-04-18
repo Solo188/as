@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    SentinelNode — Enterprise Device Admin Policy Definition
+    Package: com.flow.validator
+
+    Declares the device administration capabilities granted to AdminReceiver.
+    These policies enable full MDM enforcement when the app holds Device Owner status.
+
+    Policies declared:
+      - force-lock     : Immediately lock the device screen on command.
+      - limit-password : Enforce minimum password quality and complexity rules.
+      - wipe-data      : Perform a factory reset / selective remote wipe.
+
+    NOTE: Policies declared here are *capabilities*, not automatically enforced rules.
+    Enforcement is performed programmatically via DevicePolicyManager in MainService.java.
+-->
+<device-admin xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-policies>
+
+        <!--
+            FORCE-LOCK
+            Allows the app to lock the device screen immediately via
+            DevicePolicyManager.lockNow(). Used as a compliance enforcement
+            action when a policy violation is detected by ValidatorVpnService.
+        -->
+        <force-lock />
+
+        <!--
+            LIMIT-PASSWORD
+            Grants authority to set minimum password quality requirements.
+            Configure via DevicePolicyManager.setPasswordQuality() and
+            DevicePolicyManager.setPasswordMinimumLength() in MainService.
+            Supported quality levels (ascending):
+              PASSWORD_QUALITY_SOMETHING, NUMERIC_COMPLEX, ALPHABETIC, ALPHANUMERIC, COMPLEX
+        -->
+        <limit-password />
+
+        <!--
+            WIPE-DATA
+            Enables factory reset of the device via DevicePolicyManager.wipeData(0)
+            or selective profile wipe via wipeData(WIPE_RESET_PROTECTION_DATA).
+            This is a destructive, last-resort policy — gate it behind confirmation
+            dialogs and audit logging in the calling code.
+        -->
+        <wipe-data />
+
+        <!--
+            WATCH-LOGIN (supplementary)
+            Receives login failure events so LogAnalyzer can be fed brute-force
+            attempts without needing system log access in restricted environments.
+        -->
+        <watch-login />
+
+        <!--
+            RESET-PASSWORD (supplementary)
+            Required on pre-API-26 devices if setResetPasswordToken is not available.
+            On API 26+ this is superseded by resetPasswordWithToken.
+        -->
+        <reset-password />
+
+        <!--
+            DISABLE-CAMERA (supplementary)
+            Allows disabling device cameras enterprise-wide for high-security zones.
+            Activate via DevicePolicyManager.setCameraDisabled().
+        -->
+        <disable-camera />
+
+        <!--
+            DISABLE-KEYGUARD-FEATURES (supplementary)
+            Permits restricting keyguard features such as fingerprint unlock on
+            managed profiles or in kiosk mode.
+        -->
+        <disable-keyguard-features />
+
+    </uses-policies>
+
+</device-admin>
