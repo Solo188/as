@@ -165,11 +165,8 @@ public class MainService extends Service {
                 try { l.onFilteredEvent(logLine); } catch (Exception ignored) {}
             }
             if (isAdSdkPattern(patternName)) {
-                Log.i(TAG, "SDK init detected [" + patternName + "] — tightening VPN");
-                if (activeVpn != null) {
-                    int callerUid = android.os.Binder.getCallingUid();
-                    activeVpn.tightenUid(callerUid);
-                }
+                Log.i(TAG, "SDK init detected [" + patternName + "] — VPN active");
+                // tightenUid removed in refactoring: VPN filter is always active
             }
         });
         logAnalyzer.start();
