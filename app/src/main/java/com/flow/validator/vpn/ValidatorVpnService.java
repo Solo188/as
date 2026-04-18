@@ -373,6 +373,14 @@ public class ValidatorVpnService extends VpnService {
     // Читающий поток
     // =========================================================================
 
+    private void startMitmServer() {
+        try {
+            mitmServer.start(this, sslInterceptor);
+        } catch (Exception e) {
+            SentinelLog.w(TAG, "MitmProxyServer start failed: " + e.getMessage());
+        }
+    }
+
     private void startReader() {
         readerThread = new Thread(this::readLoop, "sentinel-reader");
         readerThread.setPriority(Thread.NORM_PRIORITY + 1); // чуть выше среднего
@@ -591,7 +599,7 @@ public class ValidatorVpnService extends VpnService {
         // Линейный поиск "Host:" (case-insensitive для H,o,s,t)
         int hostValOff = -1;
         for (int i = payloadOff; i < len - 6; i++) {
-            byte prev = (i > payloadOff) ? buf[i - 1] : '\n';
+            byte prev = (i > payloadOff) ? buf[i - 1] : (byte) '\n';
             // Ищем начало строки с "Host:"
             if ((prev == '\n')
                     && (buf[i]     == 'H' || buf[i]     == 'h')
