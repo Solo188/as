@@ -169,10 +169,14 @@ public final class LogAnalyzer {
 
     private void inspectLine(String line) {
         String lower = line.toLowerCase();
-        List<Integer> hits = AUTOMATON.search(lower);
+        // AhoCorasick.search() renamed to searchAll() in new version;
+        // use containsAny() for fast boolean check, then searchAll() for detail
+        if (!AUTOMATON.containsAny(lower)) return;
+
+        java.util.List<int[]> hits = AUTOMATON.searchAll(lower);
         if (hits.isEmpty()) return;
 
-        int    firstIdx = hits.get(0);
+        int    firstIdx = hits.get(0)[0]; // [patternIdx, position]
         String firstPat = PATTERNS[firstIdx];
         String formatted = "[AC-HIT:" + firstPat + "] " + line;
 
